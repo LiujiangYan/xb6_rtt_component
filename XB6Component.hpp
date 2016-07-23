@@ -3,6 +3,10 @@
 
 #include <rtt/TaskContext.hpp>
 #include <rtt/Component.hpp>
+#include <rtt/RTT.hpp>
+
+#include <iostream>
+#include <vector>
 
 #include </typekit/Types.hpp>
 
