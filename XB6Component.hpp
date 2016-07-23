@@ -24,7 +24,8 @@ namespace xb6_devlib{
 
 	private:
 		DevInterface dev;
-
+		
+		//InputPort<motion_control_msgs::JointPositions> xb6_joint_position;
 		InputPort<std::vector<double>> xb6_joint_position;
 		InputPort<std::vector<double>> xb6_joint_velocity;
 		InputPort<std::vector<double>> xb6_joint_torque;
