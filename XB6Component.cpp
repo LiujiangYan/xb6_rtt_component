@@ -1,4 +1,11 @@
+#ifndef _XB6_COMPONENT_HPP_
+#define _XB6_COMPONENT_HPP_
+
 #include <rtt/Component.hpp>
+#include <rtt/RTT.hpp>
+
+#include <iostream>
+#include <vector>
 
 #include "XB6Component.hpp"
 
@@ -43,7 +50,7 @@ namespace xb6_devlib{
 
 		// dev initialize & motor on
 		dev.Init();
-		dev.MotorOn();
+		dev.MotorOn(0);
 
 		return true;
 	}
@@ -52,14 +59,17 @@ namespace xb6_devlib{
 		std::vector<double> val(6, 0.0);
 
 		if (xb6_joint_position.read(val) == RTT::NewData){
+			log(Info) << "position receive " << val << endlog;
 			dev.setPosData(val);
 		}
 
 		if (xb6_joint_velocity.read(val) == RTT::NewData){
+			log(Info) << "velocity receive " << val << endlog;
 			dev.setVelocity(val);
 		}
 
 		if (xb6_joint_torque.read(val) == RTT::NewData){
+			log(Info) << "torque receive " << val << endlog;
 			dev.setTorque(val);
 		}
 
@@ -71,3 +81,5 @@ namespace xb6_devlib{
 		m_xb6_joint_torque.write(torque);
 	}
 }
+
+#endif//_XB6_COMPONENT_HPP_
