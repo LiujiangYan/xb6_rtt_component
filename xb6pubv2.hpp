@@ -2,10 +2,13 @@
 #define XB6_PUB_COMPONENT_HPP
 
 #include <rtt/RTT.hpp>
-#include <rtt/RTT.hpp>
 #include <rtt/Component.hpp>
 #include <rtt/TaskContext.hpp>
 #include <rtt/os/main.h>
+#include <rtt/Logger.hpp>
+#include <rtt/OutputPort.hpp>
+#include <rtt/rtt-config.h>
+
 #include <iostream>
 #include <math.h>
 #include <vector>
@@ -23,12 +26,14 @@ public:
 	double end_angular_freq_;
 	double cmd_;
 
-	SineSweep(string const& name){
+	SineSweep(){
 		K_ = 0.0;
 		L_ = 0.0;
 		amplitude_ = 0.0;
 		duration_ = 0.0;
 		cmd_ = 0.0;
+		start_angular_freq_ = 0.0;
+		end_angular_freq_ = 0.0;
 	}
 
 	~SineSweep(){}
@@ -39,10 +44,10 @@ public:
 		if (amplitude < 0) return false;
 
 		amplitude_ = amplitude;
-		duration_ =duration;
+		duration_ = duration;
 
-		start_angular_freq_ =2*M_PI*start_freq;
-		end_angular_freq_ =2*M_PI*end_freq;
+		start_angular_freq_ = 2*M_PI*start_freq;
+		end_angular_freq_ = 2*M_PI*end_freq;
 
 		K_ = (start_angular_freq_*duration)/log(end_angular_freq_/start_angular_freq_);
 		L_ = (duration)/log(end_angular_freq_/start_angular_freq_);
@@ -63,8 +68,7 @@ public:
 	}
 };
 
-
-class xb6pubcomponent : public RTT::TaskContext, xb6_pos_cmd("xb6_pos_cmd"), xb6_pos_current("xb6_pos_current"){
+class xb6pubcomponent : public RTT::TaskContext{
 public:
 	SineSweep sw;
 	vector<double> joint_pos_command;
@@ -72,46 +76,46 @@ public:
 	vector<double> init_pos;
 	double dt;
 
-	xb6pubcomponent(string const& name){
+	xb6pubcomponent(string const& name):RTT::TaskContext(name, PreOperational),
+					joint_pos_command(6,0.0),
+					current_pos(6,0.0),
+					init_pos(6,0.0),
+					xb6_pos_cmd("xb6_pos_cmd"),
+					xb6_pos_current("xb6_pos_current"),
+					dt(0.0){
 		vector<double> example(6, 0.0);
 		xb6_pos_cmd.setDataSample(example);
 		xb6_pos_cmd.write(example);
-		
+
 		this->ports()->addPort("xb6_pos_cmd", xb6_pos_cmd);
 		this->ports()->addPort("xb6_pos_current", xb6_pos_current);
-		//this.setPeriod(0.002);
 
-		SineSweep sw("sw");
 		sw.init(20, 2000, 10, 2);
-
-		init_pos.resize(6);
-		dt = 0.0;
 	}
 
 	~xb6pubcomponent(){}
 
 	bool configureHook(){
-		if (!xb6_pos_cmd.connected())
+		if (!xb6_pos_cmd.connected()){
+			log(Info)<<"xb6_pos_cmd.connected is wrong"<<endlog();
 			return false;
-		if (!xb6_pos_current.connected())
+		}
+		if (!xb6_pos_current.connected()){
+			log(Info)<<"xb6_pos_current.connected is wrong"<<endlog();
 			return false;
-		return true;
-	}
-
-	bool startHook(){
+		}
 		return true;
 	}
 
 	void updateHook(){
-		xb6_pos_current.read(current_pos); 
-
 		for (int i=0; i<6; i++){
 			double cmd = sw.update(dt);
-			joint_pos_command[i] = 2 * M_PI * cmd; 
+			joint_pos_command[i] = cmd;
+			cout << joint_pos_command[i] << " ";
 		}
-
+		cout << "\n";
 		xb6_pos_cmd.write(joint_pos_command);
-
+		xb6_pos_current.read(current_pos);
 		dt += 0.002;
 		if (dt > 2){
 			dt = 0;
