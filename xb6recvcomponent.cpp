@@ -16,7 +16,7 @@ using namespace std;
  * 两个component, 每个都有两部分, 一是收发double的例子, 二是收发joint_cmd的可能实现
  */
 
-class Hello : public TaskContext{
+class xb6recvcomponent : public TaskContext{
 
 
 protected:
@@ -56,7 +56,7 @@ protected:
 
 //,PreOperational
 public:
-    Hello(std::string name):
+    xb6recvcomponent(std::string name):
     	TaskContext(name,PreOperational),
 		output("output",0.0), // 名字和初始值
 		input("input"),
