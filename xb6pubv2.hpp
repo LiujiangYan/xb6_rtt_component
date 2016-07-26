@@ -64,7 +64,7 @@ public:
 };
 
 
-class xb6pubcomponent : public RTT::TaskContext{
+class xb6pubcomponent : public RTT::TaskContext, xb6_pos_cmd("xb6_pos_cmd"), xb6_pos_current("xb6_pos_current"){
 public:
 	SineSweep sw;
 	vector<double> joint_pos_command;
