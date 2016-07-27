@@ -83,7 +83,7 @@ public:
 		
 		int argc = 0;
 		char **argv = NULL;
-		ros::init(argc, argv, "LIRCOS_DIAGNOSE");
+		ros::init(argc, argv, "XB6_DIAGNOSE");
 		ros::NodeHandle nh;
 
 		m_rt_planned_cmd_pub.reset( new realtime_tools::RealtimePublisher<sensor_msgs::JointState>(nh,"/realtime_planned_jntcmd",1));
