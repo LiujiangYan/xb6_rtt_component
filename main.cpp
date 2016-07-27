@@ -28,12 +28,10 @@ int ORO_main(int argc, char** argv){
 	cout<<xb6pub.getPort("xb6_pos_cmd")->connected()<<endl;
 	cout<<xb6recv.getPort("output_setpoint")->connected()<<endl;
 
-	if(!xb6recv.start()){
-		xb6recv.configure();
-		xb6recv.start();
-	}
-	int res = xb6pub.configure();
-	cout<<res<<endl;
+	xb6recv.configure();
+	xb6recv.start();
+	
+	xb6pub.configure();
 	xb6pub.start();
 
 	char a;
