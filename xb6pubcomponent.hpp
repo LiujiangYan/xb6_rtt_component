@@ -81,7 +81,7 @@ public:
 	RosDiagnose():m_started(false){}
 	~RosDiagnose(){}
 
-	int StartNode(){
+	int StartNode(string name){
 		if(m_started)	return 0;
 
 		int argc = 0;
@@ -89,7 +89,8 @@ public:
 		ros::init(argc, argv, "XB6_DIAGNOSE");
 		ros::NodeHandle nh;
 
-		m_rt_planned_cmd_pub.reset( new realtime_tools::RealtimePublisher<sensor_msgs::JointState>(nh,"/realtime_planned_jntcmd",1));
+		//m_rt_planned_cmd_pub.reset( new realtime_tools::RealtimePublisher<sensor_msgs::JointState>(nh,"/realtime_planned_jntcmd",1));
+		m_rt_planned_cmd_pub.reset( new realtime_tools::RealtimePublisher<sensor_msgs::JointState>(nh,name,1));
 		m_rt_planned_cmd_pub->msg_.position.resize(6);
 
 		m_started = true;
@@ -120,7 +121,8 @@ private:
 class xb6pubcomponent : public RTT::TaskContext{
 public:
 	SineSweep sw;
-	RosDiagnose rd;
+	RosDiagnose rd_pub;
+	RosDiagnose rd_recv;
 	vector<double> joint_pos_command;
 	vector<double> current_pos;
 	vector<double> init_pos;
@@ -141,7 +143,8 @@ public:
 		this->ports()->addPort("xb6_pos_current", xb6_pos_current);
 
 		sw.init(1, 20, 10, 2);
-		rd.StartNode();
+		rd_pub.StartNode("/realtime_planned_jntcmd");
+		rd_recv.StartNode("/realtime_current_jnt");
 	}
 
 	~xb6pubcomponent(){}
