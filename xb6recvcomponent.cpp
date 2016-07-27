@@ -9,75 +9,39 @@
 #include <vector>
 #include <rtt/rtt-config.h>
 
+#include <devlib>
+
 using namespace RTT;
 using namespace std;
 
-/*
- * 两个component, 每个都有两部分, 一是收发double的例子, 二是收发joint_cmd的可能实现
- */
-
 class xb6recvcomponent : public TaskContext{
-
-
-protected:
-    /**
-     * OutputPorts publish data.
-     */
-    OutputPort<double> output;
-    /**
-     * InputPorts read data.
-     */
-    InputPort< double > input;
-
-    /**
-     * Since read() requires an argument, we provide this
-     * attribute to hold the read value.
-     */
-    double read_helper;
-
-
-    /*
-     * RTT本身可以实时传输vector<double>的数据
-     */
+private:
     InputPort<vector<double> > input_pos_cmd;
-    // 接受指令相当于:
-    // cmd_sub = nh.subscribe("input_pos_cmd")
+    OutputPort<vector<double> > output_pos_current;
 
+    std::vector<double> joint_cmd; // 接受的指令
+    std::vector<double> joint_current; // 发送的setpoint
 
-    OutputPort<vector<double> > output_setpoint;
-    // 相当于 setpoint_pub = nh.publish<SetPoint>("output_setpoint")
-
-
-    std::vector<double> jntcmd; // 接受的指令
-
-    std::vector<double> interpolated_setpoint; // 发送的setpoint
-
-
+    DevInterface dev;
 
 //,PreOperational
 public:
-    xb6recvcomponent(std::string name):
-    	TaskContext(name,PreOperational),
-		output("output",0.0), // 名字和初始值
-		input("input"),
-		read_helper(0.0),
+    xb6recvcomponent(std::string name):TaskContext(name,PreOperational),
 		input_pos_cmd("input_pos_cmd"),
-//		output_setpoint("interpolated_setpoint"),
-		output_setpoint("output_setpoint"),
-		jntcmd(6,0.0),
-		interpolated_setpoint(6,0.0)
-	{
+		output_pos_current("output_pos_current"),
+		joint_cmd(6,0.0),
+		joint_current(6,0.0){
     	// define the type of outputPort
     	vector<double> example(6, 0.0);
-    	output_setpoint.setDataSample(example);
-    	output_setpoint.write(example);
-
-    	this->addAttribute("read_helper",read_helper);
-    	this->ports()->addPort(output).doc("Data producing port.");
-    	this->ports()->addPort(input).doc("Data consuming port.");
+    	output_pos_current.setDataSample(example);
+    	output_pos_current.write(example);
 
     	this->ports()->addPort(input_pos_cmd).doc("Reads incoming command");
-    	this->ports()->addPort(output_setpoint).doc("sends interpolated setpoint");
+    	this->ports()->addPort(output_pos_current).doc("sends current position");
+
+        dev.Init();
+        dev.OpenDevice();
+        dev.MotorOn();
 
     }
 
@@ -86,33 +50,33 @@ public:
     		log(Info)<<"input.connected is wrong"<<endlog();
     		return false;
     	}
-    	if(!output_setpoint.connected()){
+    	if(!output_pos_current.connected()){
     		log(Info)<<"output.connected is wrong"<<endlog();
     		return false;
     	}
+        if(!dev.IsMotorOn()){
+            log(Info)<<"Motor is not on"<<endlog();
+            return false;
+        }
     	return true;
-    	//return input.connected();
     }
 
     void updateHook(){
-
-    	if(input.read(read_helper) == NewData){
-    		log(Info)<<"Received data: "<<read_helper<<endlog();
-    		output.write(read_helper);
+    	if(input_pos_cmd.read(joint_cmd) == NewData){
+    		dev.SetPosData(joint_cmd);
     	}
 
-    	if(input_pos_cmd.read(jntcmd) == NewData){
-    		interpolate();
-    	}
     	for (int i=0; i<6; i++){
-    		cout << jntcmd[i] << " ";
+    		cout << joint_cmd[i] << " ";
    		}
     	cout << "\n";
-    	output_setpoint.write(interpolated_setpoint);
 
-
+        dev.GetPosData(joint_current);
+    	output_pos_current.write(joint_current);
     }
 
-protected:
-    void interpolate(){}
+    void stopHook(){
+        dev.MotorOff();
+    }
+
 };
