@@ -1,4 +1,3 @@
-
 #ifndef TWO_COMPONENTS_HPP_
 #define TWO_COMPONENTS_HPP_
 
@@ -76,7 +75,7 @@ public:
     }
 
     void stopHook(){
-        dev.MotorOff();
+        dev.MotorOff(0);
     }
 
 };
