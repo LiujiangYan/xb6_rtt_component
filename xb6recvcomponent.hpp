@@ -19,18 +19,18 @@ private:
     InputPort<vector<double> > input_pos_cmd;
     OutputPort<vector<double> > output_pos_current;
 
-    std::vector<double> joint_cmd; // 接受的指令
-    std::vector<double> joint_current; // 发送的setpoint
+    std::vector<double> joint_cmd; // 接受指令位置
+    std::vector<double> joint_current; // 发送当前位置
 
     DevInterface dev;
 
-//,PreOperational
+//PreOperational
 public:
     xb6recvcomponent(std::string name):TaskContext(name,PreOperational),
 		input_pos_cmd("input_pos_cmd"),
 		output_pos_current("output_pos_current"),
 		joint_cmd(6,0.0),
-		joint_current(6,0.0){
+        joint_current(6,0.0){
     	// define the type of outputPort
     	vector<double> example(6, 0.0);
     	output_pos_current.setDataSample(example);

@@ -167,11 +167,12 @@ public:
 			joint_pos_command[i] = cmd;
 			//cout << joint_pos_command[i] << " ";
 		}
-
-		rd.PubSetpointRealTime(joint_pos_command);
-
 		xb6_pos_cmd.write(joint_pos_command);
 		xb6_pos_current.read(current_pos);
+
+		rd_pub.PubSetpointRealTime(joint_pos_command);
+		rd_recv.PubSetpointRealTime(current_pos);
+		
 		dt += 0.002;
 		if (dt > 10){
 			dt = 0;
