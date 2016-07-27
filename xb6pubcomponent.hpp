@@ -9,9 +9,11 @@
 #include <rtt/OutputPort.hpp>
 #include <rtt/rtt-config.h>
 
-#include <realtime_tools/realtime_publisher.h>
 #include <ros/ros.h>
+#include <realtime_tools/realtime_publisher.h>
 #include <sensor_msgs/JointState.h>
+//#include <ros/ros_diagnose.hpp>
+//#include <std_msgs/JointState.h>
 #include <boost/scoped_ptr.hpp>
 
 #include <iostream>
@@ -75,12 +77,13 @@ public:
 
 class RosDiagnose{
 public:
-	RosDiagnose():m_joint_cmd(6),m_pub_started(false),m_started(false){}
+	//RosDiagnose():m_joint_cmd(6),m_pub_started(false),m_started(false){}
+	RosDiagnose():m_started(false){}
 	~RosDiagnose(){}
 
 	int StartNode(){
 		if(m_started)	return 0;
-		
+
 		int argc = 0;
 		char **argv = NULL;
 		ros::init(argc, argv, "XB6_DIAGNOSE");
@@ -100,7 +103,7 @@ public:
 	void PubSetpointRealTime(const vector<double> setpoint){
 		if(m_rt_planned_cmd_pub->trylock()){
 			for(int i=0;i<6;++i){
-				m_rt_planned_cmd_pub->msg_.position[i] = setpoint(i);
+				m_rt_planned_cmd_pub->msg_.position[i] = setpoint[i];
 			}
 			m_rt_planned_cmd_pub->msg_.header.stamp = ros::Time::now();
 			m_rt_planned_cmd_pub->unlockAndPublish();
@@ -109,9 +112,9 @@ public:
 
 private:
 	bool m_started;
-	bool m_pub_started;
+	//bool m_pub_started;
 	boost::scoped_ptr<realtime_tools::RealtimePublisher<sensor_msgs::JointState> > m_rt_planned_cmd_pub;
-	vector<double> m_joint_cmd;
+	//vector<double> m_joint_cmd;
 };
 
 class xb6pubcomponent : public RTT::TaskContext{
@@ -137,8 +140,8 @@ public:
 		this->ports()->addPort("xb6_pos_cmd", xb6_pos_cmd);
 		this->ports()->addPort("xb6_pos_current", xb6_pos_current);
 
-		sw.init(20, 2000, 10, 2);
-		rd.StartNode;
+		sw.init(1, 20, 10, 2);
+		rd.StartNode();
 	}
 
 	~xb6pubcomponent(){}
@@ -161,7 +164,7 @@ public:
 			joint_pos_command[i] = cmd;
 			//cout << joint_pos_command[i] << " ";
 		}
-		
+
 		rd.PubSetpointRealTime(joint_pos_command);
 
 		xb6_pos_cmd.write(joint_pos_command);
