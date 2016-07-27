@@ -12,8 +12,6 @@
 #include <ros/ros.h>
 #include <realtime_tools/realtime_publisher.h>
 #include <sensor_msgs/JointState.h>
-//#include <ros/ros_diagnose.hpp>
-//#include <std_msgs/JointState.h>
 #include <boost/scoped_ptr.hpp>
 
 #include <iostream>
@@ -90,7 +88,7 @@ public:
 		ros::NodeHandle nh;
 
 		//m_rt_planned_cmd_pub.reset( new realtime_tools::RealtimePublisher<sensor_msgs::JointState>(nh,"/realtime_planned_jntcmd",1));
-		m_rt_planned_cmd_pub.reset( new realtime_tools::RealtimePublisher<sensor_msgs::JointState>(nh,name,1));
+		m_rt_planned_cmd_pub.reset(new realtime_tools::RealtimePublisher<sensor_msgs::JointState>(nh,name,1));
 		m_rt_planned_cmd_pub->msg_.position.resize(6);
 
 		m_started = true;
@@ -172,7 +170,7 @@ public:
 
 		rd_pub.PubSetpointRealTime(joint_pos_command);
 		rd_recv.PubSetpointRealTime(current_pos);
-		
+
 		dt += 0.002;
 		if (dt > 10){
 			dt = 0;
@@ -187,3 +185,5 @@ private:
 };
 
 #endif
+
+
