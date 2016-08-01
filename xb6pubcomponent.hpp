@@ -148,10 +148,11 @@ public:
 		this->ports()->addPort("xb6_pos_cmd", xb6_pos_cmd);
 		this->ports()->addPort("xb6_pos_current", xb6_pos_current);
 
-		this->addOperation()
+		this->addOperation("turnOff", &xb6pubcomponent::turnOff, this, OwnThread);
+		this->addOperation("sinesweepSet", &xb6pubcomponent::sinesweepSet, this, OwnThread);
 
 		//start frequenct, end frequency, duration, amplitude
-		sw.init(1, 10, 10, 3.14/180.0);
+		//sw.init(1, 10, 10, 3.14/180.0);
 		
 		rd_pub.StartNode("/realtime_planned_jntcmd");
 		rd_recv.StartNode("/realtime_current_jnt");
