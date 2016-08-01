@@ -149,6 +149,7 @@ public:
 		this->ports()->addPort("xb6_pos_current", xb6_pos_current);
 
 		this->addOperation("turnOff", &xb6pubcomponent::turnOff, this, OwnThread);
+		this->addOperation("turnOn", &xb6pubcomponent::sinesweepSet, this, OwnThread);
 		this->addOperation("sinesweepSet", &xb6pubcomponent::sinesweepSet, this, OwnThread);
 
 		//start frequenct, end frequency, duration, amplitude
@@ -180,26 +181,37 @@ public:
 	void updateHook(){
 
 		if(m_stopping){
+			dt = 0;
+		}
+		else{
+			// if (sign > 0){
+			// 	for (int i=0; i<6; i++){
+			// 		double cmd = sw.update(dt);
+			// 		joint_pos_command[i] = cmd;
+			// 		//cout << joint_pos_command[i] << " ";
+			// 	}
+			// 	dt += 0.002;
+			// }
+			// if (sign < 0){
+			// 	for (int i=0; i<6; i++){
+			// 		double cmd = sw.update(dt);
+			// 		joint_pos_command[i] = -cmd;
+			// 		//cout << joint_pos_command[i] << " ";
+			// 	}
+			// 	dt -= 0.002;
+			// }
+			// if (dt > 10 || dt < 0){
+			// 	sign = -sign;
+			// }
 
-		}else{
-			if (sign > 0){
-				for (int i=0; i<6; i++){
-					double cmd = sw.update(dt);
-					joint_pos_command[i] = cmd;
-					//cout << joint_pos_command[i] << " ";
-				}
-				dt += 0.002;
+			for (int i=0; i<6; i++){
+				double cmd = sw.update(dt);
+				joint_pos_command[i] = cmd;
 			}
-			if (sign < 0){
-				for (int i=0; i<6; i++){
-					double cmd = sw.update(dt);
-					joint_pos_command[i] = -cmd;
-					//cout << joint_pos_command[i] << " ";
-				}
-				dt -= 0.002;
-			}
-			if (dt > 10 || dt < 0){
-				sign = -sign;
+			dt += 0.002;
+
+			if (dt > sw.duration_){
+				m_stopping = true;
 			}
 
 			xb6_pos_cmd.write(joint_pos_command);
@@ -207,21 +219,20 @@ public:
 
 			rd_pub.PubSetpointRealTime(joint_pos_command);
 			rd_recv.PubSetpointRealTime(current_pos);
-			
 		}
 	}
 
 	bool turnOn(){
 		m_stopping = false;
+		return true;
 	}
-
 
 	bool turnOff(){
 		m_stopping = true;
+		return true;
 	}
 
-	void stopHook(){
-	}
+	void stopHook(){}
 
 private:
 	OutputPort<vector<double> > xb6_pos_cmd;

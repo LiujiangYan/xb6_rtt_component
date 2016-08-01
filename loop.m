@@ -14,17 +14,17 @@ L = (duration)/log(end_angular_freq/start_angular_freq);
 pos = [];
 sign = 1;
 dt = 0;
-for i=1:2000
+for i=1:1000
     if sign == 1
-        cmd = amplitude*sin(K*(exp((dt)/(L))-1));
         dt = dt + 0.02;    
+        cmd = amplitude*sin(K*(exp((dt)/(L))-1));
     end
     if sign == -1
-        cmd = -amplitude*sin(K*(exp((dt)/(L))-1));
         dt = dt - 0.02;  
+        cmd = -amplitude*sin(K*(exp((dt)/(L))-1));
     end
     pos = [pos;cmd];
-    if dt>10 || dt<0
+    if dt>=10 || dt<=0
         sign = -sign;
     end
 end
