@@ -140,7 +140,9 @@ public:
 		this->ports()->addPort("xb6_pos_cmd", xb6_pos_cmd);
 		this->ports()->addPort("xb6_pos_current", xb6_pos_current);
 
+		//start frequenct, end frequency, duration, amplitude
 		sw.init(1, 20, 10, 2);
+		
 		rd_pub.StartNode("/realtime_planned_jntcmd");
 		rd_recv.StartNode("/realtime_current_jnt");
 	}

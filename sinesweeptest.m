@@ -1,7 +1,7 @@
 % sine sweep
 
 start_freq = 1;
-end_freq = 5;
+end_freq = 2;
 amplitude = 2;
 duration = 10;
 
