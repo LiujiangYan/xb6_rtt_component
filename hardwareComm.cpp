@@ -29,10 +29,10 @@ int ORO_main(int argc, char** argv){
 	cout<<hd.getPort("output_setpoint")->connected()<<endl;
 
 	xb6pub.configure();
-	xb6pub.start();
+	//xb6pub.start();
 
-	
-	
+
+
 	// shutdown
 	char a;
 	std::cin>>a;

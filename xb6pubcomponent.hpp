@@ -71,6 +71,10 @@ public:
 		}
 		return cmd_;
 	}
+
+	double getVelocity(double dt){
+		return amplitude_*cos(K_*(exp((dt)/(L_))-1));
+	}
 };
 
 class RosDiagnose{
@@ -125,6 +129,8 @@ public:
 	vector<double> current_pos;
 	vector<double> init_pos;
 	double dt;
+	bool m_stopping;
+	int sign;
 
 	xb6pubcomponent(string const& name):RTT::TaskContext(name, PreOperational),
 					joint_pos_command(6,0.0),
@@ -132,7 +138,9 @@ public:
 					init_pos(6,0.0),
 					xb6_pos_cmd("xb6_pos_cmd"),
 					xb6_pos_current("xb6_pos_current"),
-					dt(0.0){
+					dt(0.0),
+					m_stopping(false),
+					sign(1){
 		vector<double> example(6, 0.0);
 		xb6_pos_cmd.setDataSample(example);
 		xb6_pos_cmd.write(example);
@@ -140,14 +148,21 @@ public:
 		this->ports()->addPort("xb6_pos_cmd", xb6_pos_cmd);
 		this->ports()->addPort("xb6_pos_current", xb6_pos_current);
 
+		this->addOperation()
+
 		//start frequenct, end frequency, duration, amplitude
-		sw.init(1, 20, 10, 3.14/180);
+		sw.init(1, 10, 10, 3.14/180.0);
 		
 		rd_pub.StartNode("/realtime_planned_jntcmd");
 		rd_recv.StartNode("/realtime_current_jnt");
 	}
 
 	~xb6pubcomponent(){}
+
+	bool sinesweepSet(double start_freq, double end_freq, double duration, double amplitude){
+		sw.init(start_freq, end_freq, duration, amplitude);
+		return ture;
+	}
 
 	bool configureHook(){
 		if (!xb6_pos_cmd.connected()){
@@ -162,24 +177,50 @@ public:
 	}
 
 	void updateHook(){
-		for (int i=0; i<6; i++){
-			double cmd = sw.update(dt);
-			joint_pos_command[i] = cmd;
-			//cout << joint_pos_command[i] << " ";
-		}
-		xb6_pos_cmd.write(joint_pos_command);
-		xb6_pos_current.read(current_pos);
 
-		rd_pub.PubSetpointRealTime(joint_pos_command);
-		rd_recv.PubSetpointRealTime(current_pos);
+		if(m_stopping){
 
-		dt += 0.002;
-		if (dt > 10){
-			dt = 0;
+		}else{
+			if (sign > 0){
+				for (int i=0; i<6; i++){
+					double cmd = sw.update(dt);
+					joint_pos_command[i] = cmd;
+					//cout << joint_pos_command[i] << " ";
+				}
+				dt += 0.002;
+			}
+			if (sign < 0){
+				for (int i=0; i<6; i++){
+					double cmd = sw.update(dt);
+					joint_pos_command[i] = -cmd;
+					//cout << joint_pos_command[i] << " ";
+				}
+				dt -= 0.002;
+			}
+			if (dt > 10 || dt < 0){
+				sign = -sign;
+			}
+
+			xb6_pos_cmd.write(joint_pos_command);
+			xb6_pos_current.read(current_pos);
+
+			rd_pub.PubSetpointRealTime(joint_pos_command);
+			rd_recv.PubSetpointRealTime(current_pos);
+			
 		}
 	}
 
-	void stopHook(){}
+	bool turnOn(){
+		m_stopping = false;
+	}
+
+
+	bool turnOff(){
+		m_stopping = true;
+	}
+
+	void stopHook(){
+	}
 
 private:
 	OutputPort<vector<double> > xb6_pos_cmd;
