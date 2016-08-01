@@ -1,5 +1,5 @@
-#ifndef XB6_PUB_COMPONENT_HPP
-#define XB6_PUB_COMPONENT_HPP
+#ifndef SINESWEEP_PUB_COMPONENT_HPP
+#define SINESWEEP_PUB_COMPONENT_HPP
 
 #include <rtt/RTT.hpp>
 #include <rtt/Component.hpp>
@@ -88,7 +88,7 @@ public:
 
 		int argc = 0;
 		char **argv = NULL;
-		ros::init(argc, argv, "XB6_DIAGNOSE");
+		ros::init(argc, argv, "SINESWEEP_DIAGNOSE");
 		ros::NodeHandle nh;
 
 		//m_rt_planned_cmd_pub.reset( new realtime_tools::RealtimePublisher<sensor_msgs::JointState>(nh,"/realtime_planned_jntcmd",1));
@@ -120,7 +120,7 @@ private:
 	//vector<double> m_joint_cmd;
 };
 
-class xb6pubcomponent : public RTT::TaskContext{
+class sinesweepComponent : public RTT::TaskContext{
 public:
 	SineSweep sw;
 	RosDiagnose rd_pub;
@@ -132,12 +132,12 @@ public:
 	bool m_stopping;
 	int sign;
 
-	xb6pubcomponent(string const& name):RTT::TaskContext(name, PreOperational),
+	sinesweepComponent(string const& name):RTT::TaskContext(name, PreOperational),
 					joint_pos_command(6,0.0),
 					current_pos(6,0.0),
 					init_pos(6,0.0),
-					xb6_pos_cmd("xb6_pos_cmd"),
-					xb6_pos_current("xb6_pos_current"),
+					xb6_pos_cmd("sinesweep_pos_cmd"),
+					xb6_pos_current("sinesweep_pos_current"),
 					dt(0.0),
 					m_stopping(false),
 					sign(1){
@@ -145,12 +145,12 @@ public:
 		xb6_pos_cmd.setDataSample(example);
 		xb6_pos_cmd.write(example);
 
-		this->ports()->addPort("xb6_pos_cmd", xb6_pos_cmd);
-		this->ports()->addPort("xb6_pos_current", xb6_pos_current);
+		this->ports()->addPort("sinesweep_pos_cmd", xb6_pos_cmd);
+		this->ports()->addPort("sinesweep_pos_current", xb6_pos_current);
 
-		this->addOperation("turnOff", &xb6pubcomponent::turnOff, this, OwnThread);
-		this->addOperation("turnOn", &xb6pubcomponent::sinesweepSet, this, OwnThread);
-		this->addOperation("sinesweepSet", &xb6pubcomponent::sinesweepSet, this, OwnThread);
+		this->addOperation("turnOff", &sinesweepComponent::turnOff, this, OwnThread);
+		this->addOperation("turnOn", &sinesweepComponent::sinesweepSet, this, OwnThread);
+		this->addOperation("sinesweepSet", &sinesweepComponent::sinesweepSet, this, OwnThread);
 
 		//start frequenct, end frequency, duration, amplitude
 		//sw.init(1, 10, 10, 3.14/180.0);
@@ -159,7 +159,7 @@ public:
 		rd_recv.StartNode("/realtime_current_jnt");
 	}
 
-	~xb6pubcomponent(){}
+	~sinesweepComponent(){}
 
 	bool sinesweepSet(double start_freq, double end_freq, double duration, double amplitude){
 		sw.init(start_freq, end_freq, duration, amplitude);
@@ -168,11 +168,11 @@ public:
 
 	bool configureHook(){
 		if (!xb6_pos_cmd.connected()){
-			log(Info)<<"xb6_pos_cmd.connected is wrong"<<endlog();
+			log(Info)<<"sinesweep_pos_cmd.connected is wrong"<<endlog();
 			return false;
 		}
 		if (!xb6_pos_current.connected()){
-			log(Info)<<"xb6_pos_current.connected is wrong"<<endlog();
+			log(Info)<<"sinesweep_pos_current.connected is wrong"<<endlog();
 			return false;
 		}
 		return true;
@@ -235,8 +235,8 @@ public:
 	void stopHook(){}
 
 private:
-	OutputPort<vector<double> > xb6_pos_cmd;
-	InputPort<vector<double> > xb6_pos_current;
+	OutputPort<vector<double> > sinesweep_pos_cmd;
+	InputPort<vector<double> > sinesweep_pos_current;
 };
 
 #endif
