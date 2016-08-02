@@ -184,35 +184,36 @@ public:
 			dt = 0;
 		}
 		else{
-			// if (sign > 0){
-			// 	for (int i=0; i<6; i++){
-			// 		double cmd = sw.update(dt);
-			// 		joint_pos_command[i] = cmd;
-			// 		//cout << joint_pos_command[i] << " ";
-			// 	}
-			// 	dt += 0.002;
-			// }
-			// if (sign < 0){
-			// 	for (int i=0; i<6; i++){
-			// 		double cmd = sw.update(dt);
-			// 		joint_pos_command[i] = -cmd;
-			// 		//cout << joint_pos_command[i] << " ";
-			// 	}
-			// 	dt -= 0.002;
-			// }
-			// if (dt > 10 || dt < 0){
-			// 	sign = -sign;
-			// }
-
-			for (int i=0; i<6; i++){
-				double cmd = sw.update(dt);
-				joint_pos_command[i] = cmd;
+			if (sign > 0){
+				for (int i=0; i<6; i++){
+					double cmd = sw.update(dt);
+					joint_pos_command[i] = cmd + offset;
+					//cout << joint_pos_command[i] << " ";
+				}
+				dt += 0.002;
 			}
-			dt += 0.002;
-
-			if (dt > sw.duration_){
-				m_stopping = true;
+			if (sign < 0){
+				for (int i=0; i<6; i++){
+					double cmd = sw.update(dt);
+					joint_pos_command[i] = -cmd + offset;
+					//cout << joint_pos_command[i] << " ";
+				}
+				dt -= 0.002;
 			}
+			if (dt > 10 || dt < 0){
+				offset = cmd * sign;
+				sign = -sign;
+			}
+
+			// for (int i=0; i<6; i++){
+			// 	double cmd = sw.update(dt);
+			// 	joint_pos_command[i] = cmd;
+			// }
+			// dt += 0.002;
+
+			// if (dt > sw.duration_){
+			// 	m_stopping = true;
+			// }
 
 			sinesweep_pos_cmd.write(joint_pos_command);
 			sinesweep_pos_current.read(current_pos);
