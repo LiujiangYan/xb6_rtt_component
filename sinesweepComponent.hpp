@@ -214,8 +214,8 @@ public:
 				m_stopping = true;
 			}
 
-			xb6_pos_cmd.write(joint_pos_command);
-			xb6_pos_current.read(current_pos);
+			sinesweep_pos_cmd.write(joint_pos_command);
+			sinesweep_pos_current.read(current_pos);
 
 			rd_pub.PubSetpointRealTime(joint_pos_command);
 			rd_recv.PubSetpointRealTime(current_pos);
